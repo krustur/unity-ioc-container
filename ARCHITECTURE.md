@@ -13,6 +13,7 @@
 │  ┌────────────────────────────────────────────────────┐    │
 │  │ • Initialize IoC Container                          │    │
 │  │ • Register all dependencies                         │    │
+│  │ • Register EventQueue                               │    │
 │  │ • Start GameStateManager                            │    │
 │  │ • Transition to initial state                       │    │
 │  └────────────────────────────────────────────────────┘    │
@@ -25,6 +26,7 @@
 │  │ Services Dictionary                                 │    │
 │  │ ┌──────────────────────────────────────────────┐  │    │
 │  │ │ IContainer → Container (Singleton)           │  │    │
+│  │ │ IEventQueue → EventQueue (Singleton)         │  │    │
 │  │ │ IGameStateManager → GameStateManager (S)     │  │    │
 │  │ │ GameMenuState → GameMenuState (Transient)    │  │    │
 │  │ │ GameEditorState → GameEditorState (T)        │  │    │
@@ -33,29 +35,30 @@
 │  │ └──────────────────────────────────────────────┘  │    │
 │  └────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  GameStateManager                            │
-│  ┌────────────────────────────────────────────────────┐    │
-│  │ Current State: IGameState                           │    │
-│  │                                                      │    │
-│  │ TransitionTo<T>():                                  │    │
-│  │   1. Exit current state                             │    │
-│  │   2. Resolve new state from container               │    │
-│  │   3. Enter new state                                │    │
-│  └────────────────────────────────────────────────────┘    │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                    ┌─────────┼─────────┐
-                    ▼         ▼         ▼
-        ┌───────────────┬─────────────┬───────────────┐
-        │ GameMenuState │GameEditorSt │ GamePlayState │
-        │               │             │               │
-        │ Enter()       │ Enter()     │ Enter()       │
-        │ Update()      │ Update()    │ Update()      │
-        │ Exit()        │ Exit()      │ Exit()        │
-        └───────────────┴─────────────┴───────────────┘
+                    │                     │
+                    ▼                     ▼
+         ┌──────────────────┐   ┌──────────────────┐
+         │ GameStateManager │   │   EventQueue     │
+         │                  │   │                  │
+         │ • State Logic    │   │ • Queue Events   │
+         │ • Transitions    │   │ • Subscribe      │
+         │                  │   │ • Dispatch       │
+         └──────────────────┘   └──────────────────┘
+                    │                     │
+          ┌─────────┼─────────┐          │
+          ▼         ▼         ▼          │
+┌────────────┬─────────┬────────────┐    │
+│GameMenuSt  │GameEd   │GamePlaySt  │    │
+│            │         │            │    │
+│Enter()     │Enter()  │Enter()     │    │
+│Update()    │Update() │Update()    │    │
+│Exit()      │Exit()   │Exit()      │    │
+└────────────┴─────────┴────────────┘    │
+          │         │         │           │
+          └─────────┴─────────┴───────────┘
+                    │
+                    ▼
+          (Subscribe to Events)
 ```
 
 ## Data Flow
@@ -279,6 +282,87 @@ _container.Register<IFactory>(c =>
 4. **Singleton Pattern**: Singleton service lifetime
 5. **Factory Pattern**: Factory registration support
 6. **Template Method**: IGameState lifecycle methods
+7. **Observer Pattern**: EventQueue pub/sub system for decoupled communication
+
+## EventQueue Architecture
+
+### Event Flow
+
+```
+Game Systems
+     │
+     ├─► Queue Events
+     │         │
+     ▼         ▼
+┌──────────────────┐
+│   EventQueue     │
+│                  │
+│ ┌──────────────┐│
+│ │ Event Queue  ││  FIFO Order
+│ │ [E1, E2, E3] ││
+│ └──────────────┘│
+│                  │
+│ ┌──────────────┐│
+│ │ Handlers Map ││
+│ │ Type→Action  ││
+│ └──────────────┘│
+└──────────────────┘
+     │
+     ├─► Dispatch Events
+     │         │
+     ▼         ▼
+Subscribed Systems
+(Handlers Invoked)
+```
+
+### EventQueue Components
+
+```
+IEvent (Interface)
+  │
+  ├─► PlayerSpawnedEvent
+  ├─► ItemCollectedEvent
+  ├─► EnemyDefeatedEvent
+  └─► Custom Events...
+
+IEventQueue (Interface)
+  │
+  └─► EventQueue (Implementation)
+        │
+        ├─► Queue<IEvent> _eventQueue
+        └─► Dictionary<Type, Delegate> _eventHandlers
+```
+
+### Integration with IoC Container
+
+```
+Container Registration:
+  _container.Register<IEventQueue, EventQueue>(ServiceLifetime.Singleton);
+
+Service Usage:
+  public class GameService
+  {
+      public GameService(IEventQueue eventQueue)
+      {
+          eventQueue.Subscribe<MyEvent>(OnMyEvent);
+      }
+      
+      public void DoSomething()
+      {
+          eventQueue.QueueEvent(new MyEvent());
+      }
+  }
+```
+
+## Design Patterns Used (Updated)
+
+1. **Dependency Injection**: Constructor injection for loose coupling
+2. **Service Locator**: Container acts as service registry
+3. **State Pattern**: Game state management
+4. **Singleton Pattern**: Singleton service lifetime
+5. **Factory Pattern**: Factory registration support
+6. **Template Method**: IGameState lifecycle methods
+7. **Observer Pattern**: EventQueue pub/sub system for decoupled communication
 
 ## Thread Safety
 
