@@ -11,14 +11,14 @@ namespace UnityIoC.EventQueue
     public class EventQueue : IEventQueue
     {
         private readonly Queue<IEvent> _eventQueue;
-        private readonly Dictionary<Type, Delegate> _eventHandlers;
+        private readonly Dictionary<Type, IEventHandlerWrapper> _eventHandlers;
         
         public int Count => _eventQueue.Count;
         
         public EventQueue()
         {
             _eventQueue = new Queue<IEvent>(64); // Pre-allocate for performance
-            _eventHandlers = new Dictionary<Type, Delegate>(32);
+            _eventHandlers = new Dictionary<Type, IEventHandlerWrapper>(32);
         }
         
         /// <summary>
@@ -60,14 +60,13 @@ namespace UnityIoC.EventQueue
             
             var eventType = typeof(T);
             
-            if (_eventHandlers.TryGetValue(eventType, out var existingDelegate))
+            if (!_eventHandlers.TryGetValue(eventType, out var wrapper))
             {
-                _eventHandlers[eventType] = Delegate.Combine(existingDelegate, handler);
+                wrapper = new EventHandlerWrapper<T>();
+                _eventHandlers[eventType] = wrapper;
             }
-            else
-            {
-                _eventHandlers[eventType] = handler;
-            }
+            
+            ((EventHandlerWrapper<T>)wrapper).AddHandler(handler);
         }
         
         /// <summary>
@@ -83,17 +82,13 @@ namespace UnityIoC.EventQueue
             
             var eventType = typeof(T);
             
-            if (_eventHandlers.TryGetValue(eventType, out var existingDelegate))
+            if (_eventHandlers.TryGetValue(eventType, out var wrapper))
             {
-                var newDelegate = Delegate.Remove(existingDelegate, handler);
+                ((EventHandlerWrapper<T>)wrapper).RemoveHandler(handler);
                 
-                if (newDelegate == null)
+                if (!((EventHandlerWrapper<T>)wrapper).HasHandlers)
                 {
                     _eventHandlers.Remove(eventType);
-                }
-                else
-                {
-                    _eventHandlers[eventType] = newDelegate;
                 }
             }
         }
@@ -113,16 +108,49 @@ namespace UnityIoC.EventQueue
         {
             var eventType = evt.GetType();
             
-            if (_eventHandlers.TryGetValue(eventType, out var handler))
+            if (_eventHandlers.TryGetValue(eventType, out var wrapper))
             {
                 try
                 {
-                    handler.DynamicInvoke(evt);
+                    wrapper.Invoke(evt);
                 }
                 catch (Exception ex)
                 {
                     Debug.LogError($"Error dispatching event {evt.EventName}: {ex.Message}");
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Interface for type-safe event handler wrappers.
+        /// </summary>
+        private interface IEventHandlerWrapper
+        {
+            void Invoke(IEvent evt);
+        }
+        
+        /// <summary>
+        /// Type-safe wrapper for event handlers that avoids reflection.
+        /// </summary>
+        private class EventHandlerWrapper<T> : IEventHandlerWrapper where T : IEvent
+        {
+            private Action<T> _handler;
+            
+            public bool HasHandlers => _handler != null;
+            
+            public void AddHandler(Action<T> handler)
+            {
+                _handler = (Action<T>)Delegate.Combine(_handler, handler);
+            }
+            
+            public void RemoveHandler(Action<T> handler)
+            {
+                _handler = (Action<T>)Delegate.Remove(_handler, handler);
+            }
+            
+            public void Invoke(IEvent evt)
+            {
+                _handler?.Invoke((T)evt);
             }
         }
     }

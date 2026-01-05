@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityIoC;
 using UnityIoC.EventQueue;
 using UnityIoC.GameStates;
 
