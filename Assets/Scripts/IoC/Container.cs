@@ -151,7 +151,6 @@ namespace UnityIoC
         /// </summary>
         private object CreateInstance(Type implementationType)
         {
-            // Get constructors ordered by parameter count (prefer parameterless)
             var constructors = implementationType.GetConstructors();
             
             if (constructors.Length == 0)
@@ -159,35 +158,59 @@ namespace UnityIoC
                 throw new InvalidOperationException($"No public constructor found for type {implementationType.Name}.");
             }
             
-            // Try to find a suitable constructor
+            // Try to find the best constructor by checking which ones have all dependencies registered
+            System.Reflection.ConstructorInfo bestConstructor = null;
+            int maxResolvableParams = -1;
+            
             foreach (var constructor in constructors)
             {
                 var parameters = constructor.GetParameters();
                 
-                // Try parameterless constructor first
+                // Parameterless constructor is always the best choice
                 if (parameters.Length == 0)
                 {
                     return Activator.CreateInstance(implementationType);
                 }
+                
+                // Check if all parameters can be resolved
+                bool allResolvable = true;
+                int resolvableCount = 0;
+                
+                foreach (var param in parameters)
+                {
+                    if (_services.ContainsKey(param.ParameterType))
+                    {
+                        resolvableCount++;
+                    }
+                    else
+                    {
+                        allResolvable = false;
+                        break;
+                    }
+                }
+                
+                // Select constructor with most resolvable dependencies
+                if (allResolvable && resolvableCount > maxResolvableParams)
+                {
+                    bestConstructor = constructor;
+                    maxResolvableParams = resolvableCount;
+                }
             }
             
-            // Use constructor with dependencies
-            var targetConstructor = constructors[0];
-            var constructorParams = targetConstructor.GetParameters();
+            if (bestConstructor == null)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot find a suitable constructor for type {implementationType.Name}. " +
+                    "Ensure all constructor dependencies are registered in the container.");
+            }
+            
+            // Resolve constructor parameters
+            var constructorParams = bestConstructor.GetParameters();
             var parameterInstances = new object[constructorParams.Length];
             
             for (int i = 0; i < constructorParams.Length; i++)
             {
-                var paramType = constructorParams[i].ParameterType;
-                
-                if (!_services.ContainsKey(paramType))
-                {
-                    throw new InvalidOperationException(
-                        $"Cannot resolve dependency {paramType.Name} for type {implementationType.Name}. " +
-                        "Ensure all dependencies are registered in the container.");
-                }
-                
-                parameterInstances[i] = Resolve(paramType);
+                parameterInstances[i] = Resolve(constructorParams[i].ParameterType);
             }
             
             return Activator.CreateInstance(implementationType, parameterInstances);
