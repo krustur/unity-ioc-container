@@ -32,7 +32,19 @@ namespace UnityIoC
             // Get or cache the RegisterInstance method
             if (_registerInstanceMethod == null)
             {
-                _registerInstanceMethod = typeof(IContainer).GetMethod(nameof(IContainer.RegisterInstance));
+                // Get the specific RegisterInstance<TService>(TService instance) method
+                var methods = typeof(IContainer).GetMethods();
+                foreach (var method in methods)
+                {
+                    if (method.Name == nameof(IContainer.RegisterInstance) &&
+                        method.IsGenericMethod &&
+                        method.GetParameters().Length == 1)
+                    {
+                        _registerInstanceMethod = method;
+                        break;
+                    }
+                }
+                
                 if (_registerInstanceMethod == null)
                 {
                     throw new InvalidOperationException("Could not find RegisterInstance method on IContainer");

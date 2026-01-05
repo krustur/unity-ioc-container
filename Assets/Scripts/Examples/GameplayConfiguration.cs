@@ -31,6 +31,12 @@ namespace UnityIoC.Examples
         [Tooltip("Enable friendly fire")]
         private bool _friendlyFireEnabled = false;
         
+        // Difficulty multiplier constants
+        private const float EASY_MULTIPLIER = 0.75f;
+        private const float NORMAL_MULTIPLIER = 1.0f;
+        private const float HARD_MULTIPLIER = 1.5f;
+        private const float EXPERT_MULTIPLIER = 2.0f;
+        
         [Header("Game Rules")]
         [SerializeField]
         [Tooltip("Time limit in seconds (0 = no limit)")]
@@ -63,11 +69,11 @@ namespace UnityIoC.Examples
             {
                 return _difficulty switch
                 {
-                    DifficultyLevel.Easy => 0.75f,
-                    DifficultyLevel.Normal => 1.0f,
-                    DifficultyLevel.Hard => 1.5f,
-                    DifficultyLevel.Expert => 2.0f,
-                    _ => 1.0f
+                    DifficultyLevel.Easy => EASY_MULTIPLIER,
+                    DifficultyLevel.Normal => NORMAL_MULTIPLIER,
+                    DifficultyLevel.Hard => HARD_MULTIPLIER,
+                    DifficultyLevel.Expert => EXPERT_MULTIPLIER,
+                    _ => NORMAL_MULTIPLIER
                 };
             }
         }
