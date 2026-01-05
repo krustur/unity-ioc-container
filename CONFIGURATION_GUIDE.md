@@ -253,9 +253,6 @@ public class RuntimeAudioSettings
 ```csharp
 public abstract class GameConfiguration : ScriptableObject
 {
-    // Override to customize configuration name
-    public virtual string ConfigurationName { get; }
-    
     // Called when registered in container
     public virtual void OnRegistered() { }
 }

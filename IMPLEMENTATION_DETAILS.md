@@ -16,7 +16,6 @@ The goal was to implement the ability to configure the IoC container using the `
 #### 1. GameConfiguration Base Class
 **File:** `Assets/Scripts/IoC/GameConfiguration.cs`
 - Abstract base class for all configuration ScriptableObjects
-- Provides `ConfigurationName` virtual property for logging
 - Includes `OnRegistered()` callback for initialization logic
 - Extensible pattern for creating custom configurations
 
