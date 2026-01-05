@@ -1,0 +1,46 @@
+using System;
+using UnityEngine;
+
+namespace UnityIoC.GameStates
+{
+    /// <summary>
+    /// Manages game state transitions and lifecycle.
+    /// </summary>
+    public class GameStateManager : IGameStateManager
+    {
+        private readonly IContainer _container;
+        private IGameState _currentState;
+        
+        public IGameState CurrentState => _currentState;
+        
+        public GameStateManager(IContainer container)
+        {
+            _container = container ?? throw new ArgumentNullException(nameof(container));
+        }
+        
+        /// <summary>
+        /// Transitions to a new game state.
+        /// </summary>
+        public void TransitionTo<TState>() where TState : IGameState
+        {
+            // Exit current state
+            _currentState?.Exit();
+            
+            // Resolve new state from container
+            _currentState = _container.Resolve<TState>();
+            
+            // Enter new state
+            _currentState?.Enter();
+            
+            Debug.Log($"Transitioned to state: {typeof(TState).Name}");
+        }
+        
+        /// <summary>
+        /// Updates the current state.
+        /// </summary>
+        public void Update()
+        {
+            _currentState?.Update();
+        }
+    }
+}
