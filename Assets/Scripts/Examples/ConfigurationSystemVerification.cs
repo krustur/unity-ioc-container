@@ -41,7 +41,7 @@ namespace UnityIoC.Tests
             
             if (_testAudioConfig != null)
             {
-                Debug.Log($"✓ AudioConfiguration loaded: {_testAudioConfig.ConfigurationName}");
+                Debug.Log($"✓ AudioConfiguration loaded: {_testAudioConfig.name}");
                 Debug.Log($"  - Master Volume: {_testAudioConfig.MasterVolume}");
                 Debug.Log($"  - Music Volume: {_testAudioConfig.MusicVolume}");
                 Debug.Log($"  - Effective Music Volume: {_testAudioConfig.EffectiveMusicVolume}");
@@ -53,7 +53,7 @@ namespace UnityIoC.Tests
             
             if (_testGameplayConfig != null)
             {
-                Debug.Log($"✓ GameplayConfiguration loaded: {_testGameplayConfig.ConfigurationName}");
+                Debug.Log($"✓ GameplayConfiguration loaded: {_testGameplayConfig.name}");
                 Debug.Log($"  - Player Speed: {_testGameplayConfig.PlayerSpeed}");
                 Debug.Log($"  - Difficulty: {_testGameplayConfig.Difficulty}");
                 Debug.Log($"  - Difficulty Multiplier: {_testGameplayConfig.DifficultyMultiplier}");

@@ -18,7 +18,7 @@ namespace UnityIoC.Examples
         public ConfigurableAudioService(AudioConfiguration audioConfig)
         {
             _audioConfig = audioConfig;
-            Debug.Log($"ConfigurableAudioService initialized with configuration: {_audioConfig.ConfigurationName}");
+            Debug.Log($"ConfigurableAudioService initialized with configuration: {_audioConfig.name}");
             Debug.Log($"Master Volume: {_audioConfig.MasterVolume}, Music Volume: {_audioConfig.MusicVolume}");
         }
         
@@ -76,7 +76,7 @@ namespace UnityIoC.Examples
         public GameplayService(GameplayConfiguration gameplayConfig)
         {
             _gameplayConfig = gameplayConfig;
-            Debug.Log($"GameplayService initialized with configuration: {_gameplayConfig.ConfigurationName}");
+            Debug.Log($"GameplayService initialized with configuration: {_gameplayConfig.name}");
         }
         
         public void InitializePlayer()

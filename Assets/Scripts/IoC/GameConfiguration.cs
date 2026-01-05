@@ -10,18 +10,12 @@ namespace UnityIoC
     public abstract class GameConfiguration : ScriptableObject
     {
         /// <summary>
-        /// Override this to provide a custom name for logging purposes.
-        /// By default, uses the ScriptableObject's name.
-        /// </summary>
-        public virtual string ConfigurationName => name;
-        
-        /// <summary>
         /// Called when the configuration is registered in the container.
         /// Override this to perform any initialization logic.
         /// </summary>
         public virtual void OnRegistered()
         {
-            Debug.Log($"Configuration '{ConfigurationName}' registered in IoC container.");
+            Debug.Log($"Configuration '{name}' registered in IoC container.");
         }
     }
 }

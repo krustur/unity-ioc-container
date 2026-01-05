@@ -64,7 +64,7 @@ namespace UnityIoC.Examples
             _container.RegisterInstance<IContainer>(_container);
             
             // Register configurations first
-            RegisterConfigurations();
+            _container.RegisterConfigurations(_configurations);
             
             // Register services that depend on configurations
             // Note: These services can inject the configuration objects in their constructors
@@ -79,14 +79,6 @@ namespace UnityIoC.Examples
             _container.Register<ConfiguredGameState, ConfiguredGameState>(ServiceLifetime.Transient);
             
             Debug.Log("=== IoC Container Initialized Successfully ===");
-        }
-        
-        /// <summary>
-        /// Registers all configuration ScriptableObjects as singletons.
-        /// </summary>
-        private void RegisterConfigurations()
-        {
-            _container.RegisterConfigurations(_configurations);
         }
         
         /// <summary>

@@ -54,7 +54,7 @@ namespace UnityIoC.Bootstrap
             _container.RegisterInstance<IContainer>(_container);
             
             // Register configuration ScriptableObjects as singletons
-            RegisterConfigurations();
+            _container.RegisterConfigurations(_configurations);
             
             // Register core services as singletons
             _container.Register<IGameStateManager, GameStateManager>(ServiceLifetime.Singleton);
@@ -71,15 +71,6 @@ namespace UnityIoC.Bootstrap
             // _container.Register<ISaveService, SaveService>(ServiceLifetime.Singleton);
             
             Debug.Log("IoC Container initialized successfully.");
-        }
-        
-        /// <summary>
-        /// Registers all configuration ScriptableObjects in the IoC container as singletons.
-        /// Each configuration is registered by its concrete type, allowing services to inject specific configurations.
-        /// </summary>
-        private void RegisterConfigurations()
-        {
-            _container.RegisterConfigurations(_configurations);
         }
         
         /// <summary>
