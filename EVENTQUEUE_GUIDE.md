@@ -585,7 +585,8 @@ eventQueue.DispatchEvents(); // Call when ready
 
 ## See Also
 
-- [README.md](README.md) - Main project documentation
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture overview
-- [EventQueueExample.cs](Assets/Scripts/Examples/EventQueueExample.cs) - Basic usage example
-- [EventQueueIoCExample.cs](Assets/Scripts/Examples/EventQueueIoCExample.cs) - IoC integration example
+- [README.md](./README.md) - Main project documentation
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture overview
+- [EVENTQUEUE_QUICKSTART.md](./EVENTQUEUE_QUICKSTART.md) - Quick start guide
+- `Assets/Scripts/Examples/EventQueueExample.cs` - Basic usage example
+- `Assets/Scripts/Examples/EventQueueIoCExample.cs` - IoC integration example

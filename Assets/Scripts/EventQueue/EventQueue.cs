@@ -10,15 +10,27 @@ namespace UnityIoC.EventQueue
     /// </summary>
     public class EventQueue : IEventQueue
     {
+        private const int DefaultEventQueueCapacity = 64;
+        private const int DefaultHandlerCapacity = 32;
+        
         private readonly Queue<IEvent> _eventQueue;
         private readonly Dictionary<Type, IEventHandlerWrapper> _eventHandlers;
         
         public int Count => _eventQueue.Count;
         
-        public EventQueue()
+        public EventQueue() : this(DefaultEventQueueCapacity, DefaultHandlerCapacity)
         {
-            _eventQueue = new Queue<IEvent>(64); // Pre-allocate for performance
-            _eventHandlers = new Dictionary<Type, IEventHandlerWrapper>(32);
+        }
+        
+        /// <summary>
+        /// Creates an EventQueue with custom capacity settings.
+        /// </summary>
+        /// <param name="eventQueueCapacity">Initial capacity for the event queue.</param>
+        /// <param name="handlerCapacity">Initial capacity for the handler dictionary.</param>
+        public EventQueue(int eventQueueCapacity, int handlerCapacity)
+        {
+            _eventQueue = new Queue<IEvent>(eventQueueCapacity);
+            _eventHandlers = new Dictionary<Type, IEventHandlerWrapper>(handlerCapacity);
         }
         
         /// <summary>
