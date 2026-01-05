@@ -261,6 +261,23 @@ public abstract class GameConfiguration : ScriptableObject
 }
 ```
 
+### ContainerConfigurationExtensions
+
+```csharp
+public static class ContainerConfigurationExtensions
+{
+    // Register a single configuration
+    public static void RegisterConfiguration(
+        this IContainer container, 
+        GameConfiguration configuration);
+    
+    // Register multiple configurations
+    public static void RegisterConfigurations(
+        this IContainer container, 
+        GameConfiguration[] configurations);
+}
+```
+
 ### GameBootstrap Configuration Support
 
 ```csharp
@@ -271,6 +288,7 @@ public class GameBootstrap : MonoBehaviour
     private GameConfiguration[] _configurations;
     
     // Automatically registers all configurations as singletons
+    // Uses extension method for optimized registration
     private void RegisterConfigurations() { }
 }
 ```

@@ -36,7 +36,7 @@ namespace UnityIoC.Examples
         [Header("Configuration Objects")]
         [SerializeField]
         [Tooltip("ScriptableObject configurations to register as singletons")]
-        private GameConfiguration[] _configurations = new GameConfiguration[0];
+        private GameConfiguration[] _configurations = { };
         
         private IContainer _container;
         private IGameStateManager _stateManager;
@@ -86,29 +86,7 @@ namespace UnityIoC.Examples
         /// </summary>
         private void RegisterConfigurations()
         {
-            if (_configurations == null || _configurations.Length == 0)
-            {
-                Debug.LogWarning("No configuration objects provided. Services may fail if they depend on configurations.");
-                return;
-            }
-            
-            Debug.Log($"Registering {_configurations.Length} configuration(s)...");
-            
-            foreach (var config in _configurations)
-            {
-                if (config == null)
-                {
-                    Debug.LogWarning("Null configuration in array, skipping.");
-                    continue;
-                }
-                
-                var configType = config.GetType();
-                var method = typeof(IContainer).GetMethod(nameof(IContainer.RegisterInstance));
-                var genericMethod = method.MakeGenericMethod(configType);
-                genericMethod.Invoke(_container, new object[] { config });
-                
-                config.OnRegistered();
-            }
+            _container.RegisterConfigurations(_configurations);
         }
         
         /// <summary>
