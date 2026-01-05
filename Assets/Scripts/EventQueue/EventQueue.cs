@@ -150,7 +150,14 @@ namespace UnityIoC.EventQueue
             
             public void Invoke(IEvent evt)
             {
-                _handler?.Invoke((T)evt);
+                if (evt is T typedEvent)
+                {
+                    _handler?.Invoke(typedEvent);
+                }
+                else
+                {
+                    Debug.LogWarning($"Event type mismatch: expected {typeof(T).Name}, got {evt?.GetType().Name}");
+                }
             }
         }
     }
