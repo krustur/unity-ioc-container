@@ -14,6 +14,11 @@ namespace UnityIoC.Bootstrap
         [Tooltip("The initial state to transition to on startup")]
         private StartupState _startupState = StartupState.Menu;
         
+        [Header("Configuration Objects")]
+        [SerializeField]
+        [Tooltip("ScriptableObject configurations to register as singletons in the IoC container")]
+        private GameConfiguration[] _configurations = { };
+        
         private IContainer _container;
         private IGameStateManager _stateManager;
         
@@ -47,6 +52,9 @@ namespace UnityIoC.Bootstrap
             
             // Register the container itself (for services that need it)
             _container.RegisterInstance<IContainer>(_container);
+            
+            // Register configuration ScriptableObjects as singletons
+            _container.RegisterConfigurations(_configurations);
             
             // Register core services as singletons
             _container.Register<IGameStateManager, GameStateManager>(ServiceLifetime.Singleton);

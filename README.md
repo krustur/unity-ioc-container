@@ -10,6 +10,7 @@ A high-performance Inversion of Control (IoC) container designed for Unity 6.0 g
 - **Game State Management**: Built-in state management system for game flow
 - **Bootstrap System**: Easy setup with MonoBehaviour bootstrap component
 - **Flexible Registration**: Support for type registration, factory functions, and instance registration
+- **ScriptableObject Configuration**: Register configuration assets as singletons for externalized game settings
 
 ## Quick Start
 
@@ -23,10 +24,37 @@ Copy the `Assets` folder to your Unity 6.0 project.
 2. Create an empty GameObject named "GameBootstrap"
 3. Attach the `GameBootstrap` component to it
 4. Configure the startup state (Menu, Editor, or Game) in the Inspector
+5. (Optional) Create and attach ScriptableObject configurations to externalize game settings
 
 ### 3. Run Your Game
 
 Press Play in Unity. The IoC container will initialize, register all dependencies, and transition to your chosen initial state.
+
+## Configuration System
+
+The container supports ScriptableObject-based configuration for externalized game settings. See [CONFIGURATION_GUIDE.md](CONFIGURATION_GUIDE.md) for detailed documentation.
+
+**Quick Example:**
+1. Create configuration assets: `Create > Game Configuration > Audio Configuration`
+2. Attach to GameBootstrap's "Configurations" array
+3. Inject into services via constructor:
+```csharp
+public class AudioService : IAudioService
+{
+    private readonly AudioConfiguration _config;
+    
+    public AudioService(AudioConfiguration config) 
+    {
+        _config = config;
+    }
+}
+```
+
+Benefits:
+- Externalize game settings without code changes
+- Version control friendly
+- Team-shareable configurations
+- Type-safe dependency injection
 
 ## Architecture
 
@@ -56,6 +84,25 @@ var myService = container.Resolve<IMyService>();
 #### ServiceLifetime
 - **Transient**: A new instance is created every time the service is requested
 - **Singleton**: A single instance is created and shared across all requests
+
+#### GameConfiguration
+Base class for ScriptableObject configurations that can be registered as singletons.
+
+```csharp
+[CreateAssetMenu(fileName = "MyConfig", menuName = "Game Configuration/My Config")]
+public class MyConfiguration : GameConfiguration
+{
+    [SerializeField] private float _mySetting = 1.0f;
+    public float MySetting => _mySetting;
+}
+
+// Register in GameBootstrap by adding to the Configurations array
+// Then inject into services:
+public class MyService
+{
+    public MyService(MyConfiguration config) { }
+}
+```
 
 ### Game State Management
 
