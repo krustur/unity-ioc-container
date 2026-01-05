@@ -11,6 +11,7 @@ A high-performance Inversion of Control (IoC) container designed for Unity 6.0 g
 - **Bootstrap System**: Easy setup with MonoBehaviour bootstrap component
 - **Flexible Registration**: Support for type registration, factory functions, and instance registration
 - **ScriptableObject Configuration**: Register configuration assets as singletons for externalized game settings
+- **EventQueue System**: Sequential event queuing and dispatching for decoupled communication between systems
 
 ## Quick Start
 
@@ -29,6 +30,47 @@ Copy the `Assets` folder to your Unity 6.0 project.
 ### 3. Run Your Game
 
 Press Play in Unity. The IoC container will initialize, register all dependencies, and transition to your chosen initial state.
+
+## EventQueue System
+
+The EventQueue system provides a robust event management solution for decoupled communication between game systems. See [EVENTQUEUE_GUIDE.md](EVENTQUEUE_GUIDE.md) for detailed documentation.
+
+**Quick Example:**
+```csharp
+// Define an event
+public class ItemCollectedEvent : IEvent
+{
+    public string EventName => "ItemCollected";
+    public string ItemName { get; set; }
+    public int Points { get; set; }
+}
+
+// Register in IoC container
+_container.Register<IEventQueue, EventQueue>(ServiceLifetime.Singleton);
+
+// Use in services
+public class GameService
+{
+    private readonly IEventQueue _eventQueue;
+    
+    public GameService(IEventQueue eventQueue)
+    {
+        _eventQueue = eventQueue;
+        _eventQueue.Subscribe<ItemCollectedEvent>(OnItemCollected);
+    }
+    
+    private void OnItemCollected(ItemCollectedEvent evt)
+    {
+        Debug.Log($"Collected {evt.ItemName} for {evt.Points} points");
+    }
+}
+```
+
+Benefits:
+- Decouple systems with event-driven communication
+- Sequential event processing for deterministic behavior
+- Type-safe event handling
+- Easy integration with IoC container
 
 ## Configuration System
 
@@ -200,13 +242,21 @@ Assets/
 │   │   ├── Container.cs           # IoC container implementation
 │   │   ├── IContainer.cs          # Container interface
 │   │   └── ServiceLifetime.cs     # Service lifetime enum
-│   └── GameStates/
-│       ├── IGameState.cs          # Game state interface
-│       ├── IGameStateManager.cs   # State manager interface
-│       ├── GameStateManager.cs    # State manager implementation
-│       ├── GameMenuState.cs       # Menu state
-│       ├── GameEditorState.cs     # Editor state
-│       └── GamePlayState.cs       # Gameplay state
+│   ├── EventQueue/
+│   │   ├── IEvent.cs              # Event interface
+│   │   ├── IEventQueue.cs         # EventQueue interface
+│   │   └── EventQueue.cs          # EventQueue implementation
+│   ├── GameStates/
+│   │   ├── IGameState.cs          # Game state interface
+│   │   ├── IGameStateManager.cs   # State manager interface
+│   │   ├── GameStateManager.cs    # State manager implementation
+│   │   ├── GameMenuState.cs       # Menu state
+│   │   ├── GameEditorState.cs     # Editor state
+│   │   └── GamePlayState.cs       # Gameplay state
+│   └── Examples/
+│       ├── UsageExample.cs        # Basic usage examples
+│       ├── EventQueueExample.cs   # EventQueue standalone example
+│       └── EventQueueIoCExample.cs # EventQueue IoC integration
 └── Scenes/
     └── Bootstrap.unity            # Initial scene with GameBootstrap
 ```
