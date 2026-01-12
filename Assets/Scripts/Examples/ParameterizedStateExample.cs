@@ -17,13 +17,7 @@ namespace UnityIoC.Examples
             _stateManager = stateManager;
         }
         
-        // Parameterless Enter (from IGameState) - provides a default
-        public void Enter()
-        {
-            Enter(1); // Default to level 1
-        }
-        
-        // Parameterized Enter (from IGameState<int>)
+        // Parameterized Enter - this state REQUIRES a level number parameter
         public void Enter(int levelNumber)
         {
             _levelNumber = levelNumber;
@@ -61,13 +55,7 @@ namespace UnityIoC.Examples
             _stateManager = stateManager;
         }
         
-        // Parameterless Enter - provides a default configuration
-        public void Enter()
-        {
-            Enter(new BattleConfiguration { EnemyCount = 3, Difficulty = "Normal" });
-        }
-        
-        // Parameterized Enter with configuration
+        // Parameterized Enter with configuration - this state REQUIRES configuration
         public void Enter(BattleConfiguration config)
         {
             _config = config;
@@ -134,12 +122,8 @@ namespace UnityIoC.Examples
             Debug.Log("\n1. Transition to Level 5:");
             _stateManager.TransitionTo<LevelState, int>(5);
             
-            // Example 2: Transition to level without parameter (uses default)
-            Debug.Log("\n2. Transition to Level (default):");
-            _stateManager.TransitionTo<LevelState>();
-            
-            // Example 3: Transition to battle with configuration
-            Debug.Log("\n3. Transition to Battle with configuration:");
+            // Example 2: Transition to battle with configuration
+            Debug.Log("\n2. Transition to Battle with configuration:");
             var battleConfig = new BattleConfiguration
             {
                 EnemyCount = 10,

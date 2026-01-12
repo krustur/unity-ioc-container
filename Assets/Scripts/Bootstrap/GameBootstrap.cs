@@ -63,7 +63,6 @@ namespace UnityIoC.Bootstrap
             _container.Register<GameMenuState, GameMenuState>(ServiceLifetime.Transient);
             _container.Register<GameEditorState, GameEditorState>(ServiceLifetime.Transient);
             _container.Register<GamePlayState, GamePlayState>(ServiceLifetime.Transient);
-            _container.Register<GamePlayStateWithLevel, GamePlayStateWithLevel>(ServiceLifetime.Transient);
             
             // TODO: Register additional game services here
             // Example:
@@ -96,7 +95,7 @@ namespace UnityIoC.Bootstrap
                     break;
                     
                 case StartupState.Game:
-                    _stateManager.TransitionTo<GamePlayState>();
+                    _stateManager.TransitionTo<GamePlayState, int>(1);
                     break;
             }
             

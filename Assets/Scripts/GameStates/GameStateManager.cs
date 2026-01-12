@@ -9,9 +9,9 @@ namespace UnityIoC.GameStates
     public class GameStateManager : IGameStateManager
     {
         private readonly IContainer _container;
-        private IGameState _currentState;
+        private object _currentState; // Changed to object to support both IGameState and IGameState<T>
         
-        public IGameState CurrentState => _currentState;
+        public IGameState CurrentState => _currentState as IGameState;
         
         public GameStateManager(IContainer container)
         {
@@ -24,13 +24,16 @@ namespace UnityIoC.GameStates
         public void TransitionTo<TState>() where TState : IGameState
         {
             // Exit current state
-            _currentState?.Exit();
+            ExitCurrentState();
             
             // Resolve new state from container
             _currentState = _container.Resolve<TState>();
             
             // Enter new state
-            _currentState?.Enter();
+            if (_currentState is IGameState state)
+            {
+                state.Enter();
+            }
             
             Debug.Log($"Transitioned to state: {typeof(TState).Name}");
         }
@@ -44,7 +47,7 @@ namespace UnityIoC.GameStates
         public void TransitionTo<TState, TParameter>(TParameter parameter) where TState : IGameState<TParameter>
         {
             // Exit current state
-            _currentState?.Exit();
+            ExitCurrentState();
             
             // Resolve new state from container
             var newState = _container.Resolve<TState>();
@@ -68,7 +71,33 @@ namespace UnityIoC.GameStates
         /// </summary>
         public void Update()
         {
-            _currentState?.Update();
+            if (_currentState is IGameState state)
+            {
+                state.Update();
+            }
+            else if (_currentState != null)
+            {
+                // For IGameState<T> states, we need to call Update via reflection or dynamic
+                var updateMethod = _currentState.GetType().GetMethod("Update");
+                updateMethod?.Invoke(_currentState, null);
+            }
+        }
+        
+        /// <summary>
+        /// Exits the current state regardless of its type.
+        /// </summary>
+        private void ExitCurrentState()
+        {
+            if (_currentState is IGameState state)
+            {
+                state.Exit();
+            }
+            else if (_currentState != null)
+            {
+                // For IGameState<T> states, we need to call Exit via reflection
+                var exitMethod = _currentState.GetType().GetMethod("Exit");
+                exitMethod?.Invoke(_currentState, null);
+            }
         }
     }
 }

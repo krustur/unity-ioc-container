@@ -228,26 +228,20 @@ _stateManager.TransitionTo<MyCustomState>();
 
 #### Parameterized States
 
-For states that require parameters on entry, implement the `IGameState<T>` interface:
+For states that require parameters on entry, implement the `IGameState<T>` interface. Note that `IGameState<T>` does NOT inherit from `IGameState`, so parameterized states cannot be transitioned to without parameters:
 
 ```csharp
-public class GamePlayStateWithLevel : IGameState<int>
+public class GamePlayState : IGameState<int>
 {
     private readonly IGameStateManager _stateManager;
     private int _currentLevel;
     
-    public GamePlayStateWithLevel(IGameStateManager stateManager)
+    public GamePlayState(IGameStateManager stateManager)
     {
         _stateManager = stateManager;
     }
     
-    // Parameterless Enter (from IGameState) - uses default
-    public void Enter()
-    {
-        Enter(1); // Default to level 1
-    }
-    
-    // Parameterized Enter (from IGameState<int>)
+    // Parameterized Enter - REQUIRED, no default allowed
     public void Enter(int levelNumber)
     {
         _currentLevel = levelNumber;
@@ -259,7 +253,7 @@ public class GamePlayStateWithLevel : IGameState<int>
     {
         // Update state logic
         // Can transition to next level with parameter:
-        // _stateManager.TransitionTo<GamePlayStateWithLevel, int>(_currentLevel + 1);
+        // _stateManager.TransitionTo<GamePlayState, int>(_currentLevel + 1);
     }
     
     public void Exit()
@@ -273,17 +267,17 @@ Register and transition with parameters:
 
 ```csharp
 // Register the state
-_container.Register<GamePlayStateWithLevel, GamePlayStateWithLevel>(ServiceLifetime.Transient);
+_container.Register<GamePlayState, GamePlayState>(ServiceLifetime.Transient);
 
-// Transition with parameter
-_stateManager.TransitionTo<GamePlayStateWithLevel, int>(3); // Load level 3
+// Transition with parameter - parameter is REQUIRED
+_stateManager.TransitionTo<GamePlayState, int>(3); // Load level 3
 ```
 
 **Benefits of Parameterized States:**
 - Strong compile-time type safety for state parameters
-- No need for separate initialization methods
+- Parameters are enforced - states implementing `IGameState<T>` cannot be transitioned to without providing the required parameter
 - Clean API for passing data between states
-- Backward compatible with existing parameterless states
+- Clear separation between parameterless and parameterized states
 
 ## Performance Considerations
 
