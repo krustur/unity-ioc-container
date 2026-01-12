@@ -71,7 +71,7 @@ namespace UnityIoC.Examples
         public void Enter(BattleConfiguration config)
         {
             _config = config;
-            Debug.Log($"Starting battle: {_config.EnemyCount} enemies, Difficulty: {_config.Difficulty}");
+            Debug.Log($"Starting battle: {_config.EnemyCount} enemies, Difficulty: {_config.Difficulty}, Type: {_config.BattleType ?? "Standard"}");
             // Setup battle based on configuration
         }
         
@@ -118,10 +118,14 @@ namespace UnityIoC.Examples
             // Get state manager
             _stateManager = _container.Resolve<IGameStateManager>();
             
-            // Example transitions:
-            DemonstrateTransitions();
+            // Note: Uncomment to see demonstration of transitions on startup
+            // DemonstrateTransitions();
         }
         
+        /// <summary>
+        /// Demonstrates various parameterized state transitions.
+        /// Call this manually or bind to a key to see examples.
+        /// </summary>
         private void DemonstrateTransitions()
         {
             Debug.Log("=== Parameterized State Transition Examples ===");
@@ -150,6 +154,12 @@ namespace UnityIoC.Examples
         private void Update()
         {
             _stateManager?.Update();
+            
+            // Press D to see demonstration of parameterized transitions
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                DemonstrateTransitions();
+            }
             
             // Example hotkeys for testing
             if (Input.GetKeyDown(KeyCode.Alpha1))

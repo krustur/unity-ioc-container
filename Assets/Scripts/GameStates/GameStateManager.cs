@@ -48,10 +48,17 @@ namespace UnityIoC.GameStates
             
             // Resolve new state from container
             var newState = _container.Resolve<TState>();
+            
+            if (newState == null)
+            {
+                Debug.LogError($"Failed to resolve state: {typeof(TState).Name}");
+                return;
+            }
+            
             _currentState = newState;
             
             // Enter new state with parameter
-            newState?.Enter(parameter);
+            newState.Enter(parameter);
             
             Debug.Log($"Transitioned to state: {typeof(TState).Name} with parameter: {parameter}");
         }

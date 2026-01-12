@@ -52,11 +52,21 @@ namespace UnityIoC.GameStates
                 _stateManager.TransitionTo<GameMenuState>();
             }
             
-            // Example: Load next level on N key
+            // Example: Load next level on N key (with bounds checking)
             if (Input.GetKeyDown(KeyCode.N))
             {
-                Debug.Log($"Loading next level...");
-                _stateManager.TransitionTo<GamePlayStateWithLevel, int>(_currentLevel + 1);
+                int nextLevel = _currentLevel + 1;
+                // TODO: Replace with actual max level check
+                const int maxLevel = 99;
+                if (nextLevel <= maxLevel)
+                {
+                    Debug.Log($"Loading next level...");
+                    _stateManager.TransitionTo<GamePlayStateWithLevel, int>(nextLevel);
+                }
+                else
+                {
+                    Debug.Log("Already at maximum level!");
+                }
             }
         }
         
