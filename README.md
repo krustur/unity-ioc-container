@@ -12,6 +12,7 @@ A high-performance Inversion of Control (IoC) container designed for Unity 6.0 g
 - **Flexible Registration**: Support for type registration, factory functions, and instance registration
 - **ScriptableObject Configuration**: Register configuration assets as singletons for externalized game settings
 - **EventQueue System**: Sequential event queuing and dispatching for decoupled communication between systems
+- **Logger System**: High-performance logging with dependency injection, automatic naming, and file logging support
 
 ## Quick Start
 
@@ -97,6 +98,63 @@ Benefits:
 - Version control friendly
 - Team-shareable configurations
 - Type-safe dependency injection
+
+## Logger System
+
+The container includes a high-performance logging system designed for dependency injection with automatic logger naming. It supports Unity console logging and file logging for non-Unity environments.
+
+**Quick Example:**
+```csharp
+// Register logging in your bootstrap
+_container.RegisterLogging();
+_container.RegisterLogger<MyService>();
+
+// Inject logger into your service
+public class MyService
+{
+    private readonly ILogger<MyService> _logger;
+    
+    public MyService(ILogger<MyService> logger)
+    {
+        _logger = logger;
+        // Logger name is automatically "YourNamespace.MyService"
+    }
+    
+    public void DoWork()
+    {
+        _logger.Trace("Starting operation");
+        _logger.Information("Processing data");
+        _logger.Error("An error occurred");
+    }
+}
+```
+
+**Using LoggerFactory directly:**
+```csharp
+// Register logger factory
+_container.RegisterLogging();
+
+// Create loggers with custom names
+var factory = _container.Resolve<ILoggerFactory>();
+var logger = factory.CreateLogger("CustomName");
+var typedLogger = factory.CreateLogger<MyClass>();
+```
+
+Benefits:
+- Automatic logger naming based on consuming class
+- Three log levels: Trace, Information, Error
+- Unity console integration (uses UnityEngine.Debug)
+- File logging for non-Unity environments (with date-based log files)
+- High performance with pre-allocated StringBuilder and logger caching
+- Thread-safe file logging
+- Zero dependencies outside .NET standard library
+
+**Log Format:**
+```
+2026-01-12 21:40:30.313 [TRACE] [Namespace.ClassName] Your message here
+2026-01-12 21:40:30.315 [INFO] [Namespace.ClassName] Your message here
+2026-01-12 21:40:30.316 [ERROR] [Namespace.ClassName] Your message here
+```
 
 ## Architecture
 
@@ -285,6 +343,8 @@ _stateManager.TransitionTo<GamePlayState, int>(3); // Load level 3
 - Singleton instances are cached for fast subsequent access
 - Constructor injection is optimized with minimal reflection
 - Dictionary-based lookups provide O(1) service resolution
+- Logger uses pre-allocated StringBuilder and caches logger instances for performance
+- File logging uses efficient append operations with thread-safe locking
 
 ## Example Project Structure
 
@@ -297,6 +357,14 @@ Assets/
 │   │   ├── Container.cs           # IoC container implementation
 │   │   ├── IContainer.cs          # Container interface
 │   │   └── ServiceLifetime.cs     # Service lifetime enum
+│   ├── Logging/
+│   │   ├── ILogger.cs             # Logger interface
+│   │   ├── ILoggerFactory.cs      # Logger factory interface
+│   │   ├── Logger.cs              # Logger implementation
+│   │   ├── LoggerFactory.cs       # Logger factory implementation
+│   │   ├── ILoggerT.cs            # Generic logger interface
+│   │   ├── LoggerT.cs             # Generic logger implementation
+│   │   └── LoggingContainerExtensions.cs # IoC registration extensions
 │   ├── EventQueue/
 │   │   ├── IEvent.cs              # Event interface
 │   │   ├── IEventQueue.cs         # EventQueue interface
@@ -311,7 +379,8 @@ Assets/
 │   └── Examples/
 │       ├── UsageExample.cs        # Basic usage examples
 │       ├── EventQueueExample.cs   # EventQueue standalone example
-│       └── EventQueueIoCExample.cs # EventQueue IoC integration
+│       ├── EventQueueIoCExample.cs # EventQueue IoC integration
+│       └── LoggerUsageExample.cs  # Logger usage example
 └── Scenes/
     └── Bootstrap.unity            # Initial scene with GameBootstrap
 ```
