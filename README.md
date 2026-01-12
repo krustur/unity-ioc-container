@@ -180,6 +180,8 @@ _container.Register<IEnemyFactory, EnemyFactory>(ServiceLifetime.Transient);
 
 ### Creating Custom Game States
 
+#### Parameterless States
+
 1. Implement the `IGameState` interface:
 
 ```csharp
@@ -223,6 +225,65 @@ _container.Register<MyCustomState, MyCustomState>(ServiceLifetime.Transient);
 ```csharp
 _stateManager.TransitionTo<MyCustomState>();
 ```
+
+#### Parameterized States
+
+For states that require parameters on entry, implement the `IGameState<T>` interface:
+
+```csharp
+public class GamePlayStateWithLevel : IGameState<int>
+{
+    private readonly IGameStateManager _stateManager;
+    private int _currentLevel;
+    
+    public GamePlayStateWithLevel(IGameStateManager stateManager)
+    {
+        _stateManager = stateManager;
+    }
+    
+    // Parameterless Enter (from IGameState) - uses default
+    public void Enter()
+    {
+        Enter(1); // Default to level 1
+    }
+    
+    // Parameterized Enter (from IGameState<int>)
+    public void Enter(int levelNumber)
+    {
+        _currentLevel = levelNumber;
+        Debug.Log($"Loading level {_currentLevel}");
+        // Initialize with specific level
+    }
+    
+    public void Update()
+    {
+        // Update state logic
+        // Can transition to next level with parameter:
+        // _stateManager.TransitionTo<GamePlayStateWithLevel, int>(_currentLevel + 1);
+    }
+    
+    public void Exit()
+    {
+        // Cleanup state
+    }
+}
+```
+
+Register and transition with parameters:
+
+```csharp
+// Register the state
+_container.Register<GamePlayStateWithLevel, GamePlayStateWithLevel>(ServiceLifetime.Transient);
+
+// Transition with parameter
+_stateManager.TransitionTo<GamePlayStateWithLevel, int>(3); // Load level 3
+```
+
+**Benefits of Parameterized States:**
+- Strong compile-time type safety for state parameters
+- No need for separate initialization methods
+- Clean API for passing data between states
+- Backward compatible with existing parameterless states
 
 ## Performance Considerations
 
