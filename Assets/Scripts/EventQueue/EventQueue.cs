@@ -36,15 +36,15 @@ namespace UnityIoC.EventQueue
         /// <summary>
         /// Queues an event to be dispatched later.
         /// </summary>
-        public void QueueEvent(IEvent @event)
+        public void QueueEvent(IEvent evt)
         {
-            if (@event == null)
+            if (evt == null)
             {
                 Debug.LogWarning("Attempted to queue a null event.");
                 return;
             }
             
-            _eventQueue.Enqueue(@event);
+            _eventQueue.Enqueue(evt);
         }
         
         /// <summary>
@@ -54,8 +54,8 @@ namespace UnityIoC.EventQueue
         {
             while (_eventQueue.Count > 0)
             {
-                var @event = _eventQueue.Dequeue();
-                DispatchEvent(@event);
+                var evt = _eventQueue.Dequeue();
+                DispatchEvent(evt);
             }
         }
         
@@ -116,19 +116,19 @@ namespace UnityIoC.EventQueue
         /// <summary>
         /// Dispatches a single event to all registered handlers.
         /// </summary>
-        private void DispatchEvent(IEvent @event)
+        private void DispatchEvent(IEvent evt)
         {
-            var eventType = @event.GetType();
+            var eventType = evt.GetType();
             
             if (_eventHandlers.TryGetValue(eventType, out var wrapper))
             {
                 try
                 {
-                    wrapper.Invoke(@event);
+                    wrapper.Invoke(evt);
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"Error dispatching event {@event.EventName}: {ex.Message}");
+                    Debug.LogError($"Error dispatching event {evt.EventName}: {ex.Message}");
                 }
             }
         }
@@ -138,7 +138,7 @@ namespace UnityIoC.EventQueue
         /// </summary>
         private interface IEventHandlerWrapper
         {
-            void Invoke(IEvent @event);
+            void Invoke(IEvent evt);
         }
         
         /// <summary>
@@ -160,15 +160,15 @@ namespace UnityIoC.EventQueue
                 _handler = (Action<T>)Delegate.Remove(_handler, handler);
             }
             
-            public void Invoke(IEvent @event)
+            public void Invoke(IEvent evt)
             {
-                if (@event is T typedEvent)
+                if (evt is T typedEvent)
                 {
                     _handler?.Invoke(typedEvent);
                 }
                 else
                 {
-                    Debug.LogWarning($"Event type mismatch: expected {typeof(T).Name}, got {@event?.GetType().Name}");
+                    Debug.LogWarning($"Event type mismatch: expected {typeof(T).Name}, got {evt?.GetType().Name}");
                 }
             }
         }

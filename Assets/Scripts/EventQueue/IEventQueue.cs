@@ -10,8 +10,8 @@ namespace UnityIoC.EventQueue
         /// <summary>
         /// Queues an event to be dispatched later.
         /// </summary>
-        /// <param name="event">The event to queue.</param>
-        void QueueEvent(IEvent @event);
+        /// <param name="evt">The event to queue.</param>
+        void QueueEvent(IEvent evt);
         
         /// <summary>
         /// Dispatches all queued events in order (FIFO).
