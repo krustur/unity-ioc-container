@@ -38,6 +38,25 @@ namespace UnityIoC.GameStates
                 Debug.Log("Opening editor...");
                 _stateManager.TransitionTo<GameEditorState>();
             }
+            
+            // Example: Transition to game with specific level (parameterized state)
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                Debug.Log("Starting game at level 1...");
+                _stateManager.TransitionTo<GamePlayStateWithLevel, int>(1);
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                Debug.Log("Starting game at level 2...");
+                _stateManager.TransitionTo<GamePlayStateWithLevel, int>(2);
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                Debug.Log("Starting game at level 3...");
+                _stateManager.TransitionTo<GamePlayStateWithLevel, int>(3);
+            }
         }
         
         public void Exit()

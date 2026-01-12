@@ -22,4 +22,17 @@ namespace UnityIoC.GameStates
         /// </summary>
         void Exit();
     }
+    
+    /// <summary>
+    /// Interface for game states that require parameters on entry.
+    /// </summary>
+    /// <typeparam name="T">The type of parameter required by this state.</typeparam>
+    public interface IGameState<T> : IGameState
+    {
+        /// <summary>
+        /// Called when entering this state with a parameter.
+        /// </summary>
+        /// <param name="parameter">The parameter to pass to the state.</param>
+        void Enter(T parameter);
+    }
 }

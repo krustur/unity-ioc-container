@@ -63,6 +63,7 @@ namespace UnityIoC.Bootstrap
             _container.Register<GameMenuState, GameMenuState>(ServiceLifetime.Transient);
             _container.Register<GameEditorState, GameEditorState>(ServiceLifetime.Transient);
             _container.Register<GamePlayState, GamePlayState>(ServiceLifetime.Transient);
+            _container.Register<GamePlayStateWithLevel, GamePlayStateWithLevel>(ServiceLifetime.Transient);
             
             // TODO: Register additional game services here
             // Example:
