@@ -25,18 +25,30 @@ namespace UnityIoC.GameStates
         {
             // TODO: Handle menu input and interactions
             
-            // Example: Transition to game on key press
-            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space))
-            {
-                Debug.Log("Starting game...");
-                _stateManager.TransitionTo<GamePlayState>();
-            }
-            
             // Example: Transition to editor on key press
             if (Input.GetKeyDown(KeyCode.E))
             {
                 Debug.Log("Opening editor...");
                 _stateManager.TransitionTo<GameEditorState>();
+            }
+            
+            // Example: Transition to game with specific level (parameterized state)
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                Debug.Log("Starting game at level 1...");
+                _stateManager.TransitionTo<GamePlayState, int>(1);
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                Debug.Log("Starting game at level 2...");
+                _stateManager.TransitionTo<GamePlayState, int>(2);
+            }
+            
+            if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                Debug.Log("Starting game at level 3...");
+                _stateManager.TransitionTo<GamePlayState, int>(3);
             }
         }
         

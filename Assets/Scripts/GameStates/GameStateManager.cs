@@ -9,9 +9,9 @@ namespace UnityIoC.GameStates
     public class GameStateManager : IGameStateManager
     {
         private readonly IContainer _container;
-        private IGameState _currentState;
+        private IGameStateBase _currentState;
         
-        public IGameState CurrentState => _currentState;
+        public IGameState CurrentState => _currentState as IGameState;
         
         public GameStateManager(IContainer container)
         {
@@ -27,12 +27,41 @@ namespace UnityIoC.GameStates
             _currentState?.Exit();
             
             // Resolve new state from container
-            _currentState = _container.Resolve<TState>();
+            var newState = _container.Resolve<TState>();
+            _currentState = newState;
             
             // Enter new state
-            _currentState?.Enter();
+            newState?.Enter();
             
             Debug.Log($"Transitioned to state: {typeof(TState).Name}");
+        }
+        
+        /// <summary>
+        /// Transitions to a new game state with a parameter.
+        /// </summary>
+        /// <typeparam name="TState">The state type that implements IGameState&lt;TParameter&gt;.</typeparam>
+        /// <typeparam name="TParameter">The type of parameter to pass to the state.</typeparam>
+        /// <param name="parameter">The parameter to pass to the state's Enter method.</param>
+        public void TransitionTo<TState, TParameter>(TParameter parameter) where TState : IGameState<TParameter>
+        {
+            // Exit current state
+            _currentState?.Exit();
+            
+            // Resolve new state from container
+            var newState = _container.Resolve<TState>();
+            
+            if (newState == null)
+            {
+                Debug.LogError($"Failed to resolve state: {typeof(TState).Name}");
+                return;
+            }
+            
+            _currentState = newState;
+            
+            // Enter new state with parameter
+            newState.Enter(parameter);
+            
+            Debug.Log($"Transitioned to state: {typeof(TState).Name} with parameter: {parameter}");
         }
         
         /// <summary>

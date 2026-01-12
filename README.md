@@ -180,6 +180,8 @@ _container.Register<IEnemyFactory, EnemyFactory>(ServiceLifetime.Transient);
 
 ### Creating Custom Game States
 
+#### Parameterless States
+
 1. Implement the `IGameState` interface:
 
 ```csharp
@@ -223,6 +225,59 @@ _container.Register<MyCustomState, MyCustomState>(ServiceLifetime.Transient);
 ```csharp
 _stateManager.TransitionTo<MyCustomState>();
 ```
+
+#### Parameterized States
+
+For states that require parameters on entry, implement the `IGameState<T>` interface. Note that `IGameState<T>` does NOT inherit from `IGameState`, so parameterized states cannot be transitioned to without parameters:
+
+```csharp
+public class GamePlayState : IGameState<int>
+{
+    private readonly IGameStateManager _stateManager;
+    private int _currentLevel;
+    
+    public GamePlayState(IGameStateManager stateManager)
+    {
+        _stateManager = stateManager;
+    }
+    
+    // Parameterized Enter - REQUIRED, no default allowed
+    public void Enter(int levelNumber)
+    {
+        _currentLevel = levelNumber;
+        Debug.Log($"Loading level {_currentLevel}");
+        // Initialize with specific level
+    }
+    
+    public void Update()
+    {
+        // Update state logic
+        // Can transition to next level with parameter:
+        // _stateManager.TransitionTo<GamePlayState, int>(_currentLevel + 1);
+    }
+    
+    public void Exit()
+    {
+        // Cleanup state
+    }
+}
+```
+
+Register and transition with parameters:
+
+```csharp
+// Register the state
+_container.Register<GamePlayState, GamePlayState>(ServiceLifetime.Transient);
+
+// Transition with parameter - parameter is REQUIRED
+_stateManager.TransitionTo<GamePlayState, int>(3); // Load level 3
+```
+
+**Benefits of Parameterized States:**
+- Strong compile-time type safety for state parameters
+- Parameters are enforced - states implementing `IGameState<T>` cannot be transitioned to without providing the required parameter
+- Clean API for passing data between states
+- Clear separation between parameterless and parameterized states
 
 ## Performance Considerations
 

@@ -95,7 +95,7 @@ namespace UnityIoC.Bootstrap
                     break;
                     
                 case StartupState.Game:
-                    _stateManager.TransitionTo<GamePlayState>();
+                    _stateManager.TransitionTo<GamePlayState, int>(1);
                     break;
             }
             
