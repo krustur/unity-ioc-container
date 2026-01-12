@@ -57,7 +57,9 @@ namespace UnityIoC.Logging
                     Directory.CreateDirectory(logDirectory);
                 }
                 
-                // Generate log file name with date
+                // Generate log file name with date for daily log rotation
+                // Note: Each logger instance created on a different day will use a new file,
+                // which is intentional to provide daily log rotation
                 var logFileName = $"app_{DateTime.Now:yyyy-MM-dd}.log";
                 _logFilePath = Path.Combine(logDirectory, logFileName);
             }
@@ -92,6 +94,8 @@ namespace UnityIoC.Logging
         
         /// <summary>
         /// Core logging method that formats and outputs messages.
+        /// Uses lock for thread-safety. For high-concurrency scenarios,
+        /// consider using ThreadStatic StringBuilder or object pooling.
         /// </summary>
         private void LogMessage(string levelPrefix, string message)
         {
@@ -151,6 +155,9 @@ namespace UnityIoC.Logging
         
         /// <summary>
         /// Logs a message to a file with proper locking for thread safety.
+        /// Uses File.AppendAllText for simplicity and reliability.
+        /// Note: Opens/closes file for each write. For high-frequency logging,
+        /// consider using a buffered StreamWriter approach instead.
         /// </summary>
         private void LogToFile(string message)
         {

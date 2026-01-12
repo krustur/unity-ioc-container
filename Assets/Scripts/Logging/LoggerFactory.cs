@@ -9,6 +9,10 @@ namespace UnityIoC.Logging
     /// </summary>
     public class LoggerFactory : ILoggerFactory
     {
+        // Pre-allocate cache with reasonable default capacity
+        // Most applications use fewer than 32 distinct logger names
+        private const int DefaultCacheCapacity = 32;
+        
         // Cache loggers by name for performance
         private readonly Dictionary<string, ILogger> _loggerCache;
         private readonly object _cacheLock = new object();
@@ -19,7 +23,7 @@ namespace UnityIoC.Logging
         public LoggerFactory()
         {
             // Pre-allocate cache for performance
-            _loggerCache = new Dictionary<string, ILogger>(32);
+            _loggerCache = new Dictionary<string, ILogger>(DefaultCacheCapacity);
         }
         
         /// <summary>
