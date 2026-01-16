@@ -175,9 +175,12 @@ The main IoC container that manages service registration and resolution.
 // Create a container
 IContainer container = new Container();
 
-// Register services
+// Register services with interface and implementation
 container.Register<IMyService, MyService>(ServiceLifetime.Singleton);
 container.Register<ITransientService, TransientService>(ServiceLifetime.Transient);
+
+// Register concrete types as themselves (convenience method)
+container.Register<MyConcreteService>(ServiceLifetime.Singleton);
 
 // Register with factory
 container.Register<IConfigService>(c => new ConfigService("config.json"), ServiceLifetime.Singleton);
@@ -283,6 +286,10 @@ public class MyCustomState : IGameState
 2. Register your state in the container:
 
 ```csharp
+// Using the convenience method (recommended for concrete types)
+_container.Register<MyCustomState>(ServiceLifetime.Transient);
+
+// Or using the full syntax
 _container.Register<MyCustomState, MyCustomState>(ServiceLifetime.Transient);
 ```
 
@@ -332,8 +339,8 @@ public class GamePlayState : IGameState<int>
 Register and transition with parameters:
 
 ```csharp
-// Register the state
-_container.Register<GamePlayState, GamePlayState>(ServiceLifetime.Transient);
+// Register the state (using convenience method)
+_container.Register<GamePlayState>(ServiceLifetime.Transient);
 
 // Transition with parameter - parameter is REQUIRED
 _stateManager.TransitionTo<GamePlayState, int>(3); // Load level 3

@@ -73,10 +73,10 @@ namespace UnityIoC.Examples
             
             // Register state management
             _container.Register<IGameStateManager, GameStateManager>(ServiceLifetime.Singleton);
-            _container.Register<GameMenuState, GameMenuState>(ServiceLifetime.Transient);
-            _container.Register<GameEditorState, GameEditorState>(ServiceLifetime.Transient);
-            _container.Register<GamePlayState, GamePlayState>(ServiceLifetime.Transient);
-            _container.Register<ConfiguredGameState, ConfiguredGameState>(ServiceLifetime.Transient);
+            _container.Register<GameMenuState>(ServiceLifetime.Transient);
+            _container.Register<GameEditorState>(ServiceLifetime.Transient);
+            _container.Register<GamePlayState>(ServiceLifetime.Transient);
+            _container.Register<ConfiguredGameState>(ServiceLifetime.Transient);
             
             Debug.Log("=== IoC Container Initialized Successfully ===");
         }

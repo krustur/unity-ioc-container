@@ -99,9 +99,9 @@ namespace UnityIoC.Examples
             _container.RegisterInstance<IContainer>(_container);
             _container.Register<IGameStateManager, GameStateManager>(ServiceLifetime.Singleton);
             
-            // Register parameterized states
-            _container.Register<LevelState, LevelState>(ServiceLifetime.Transient);
-            _container.Register<BattleState, BattleState>(ServiceLifetime.Transient);
+            // Register parameterized states (using convenience method)
+            _container.Register<LevelState>(ServiceLifetime.Transient);
+            _container.Register<BattleState>(ServiceLifetime.Transient);
             
             // Get state manager
             _stateManager = _container.Resolve<IGameStateManager>();

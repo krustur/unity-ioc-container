@@ -9,6 +9,12 @@ namespace UnityIoC
     public interface IContainer
     {
         /// <summary>
+        /// Registers a service as itself.
+        /// </summary>
+        void Register<TService>(ServiceLifetime lifetime = ServiceLifetime.Transient)
+            where TService : class;
+        
+        /// <summary>
         /// Registers a service with a concrete implementation type.
         /// </summary>
         void Register<TService, TImplementation>(ServiceLifetime lifetime = ServiceLifetime.Transient)
