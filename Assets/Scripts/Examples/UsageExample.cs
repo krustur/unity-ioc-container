@@ -90,9 +90,9 @@ namespace UnityIoC.Examples
             // Register custom services
             container.Register<IAudioService, AudioService>(ServiceLifetime.Singleton);
             
-            // Register game states
-            container.Register<GameMenuState, GameMenuState>(ServiceLifetime.Transient);
-            container.Register<CustomGameState, CustomGameState>(ServiceLifetime.Transient);
+            // Register game states (using convenience method for concrete types)
+            container.Register<GameMenuState>(ServiceLifetime.Transient);
+            container.Register<CustomGameState>(ServiceLifetime.Transient);
             
             // Start the game
             var stateManager = container.Resolve<IGameStateManager>();

@@ -60,9 +60,9 @@ namespace UnityIoC.Bootstrap
             _container.Register<IGameStateManager, GameStateManager>(ServiceLifetime.Singleton);
             
             // Register game states as transient (new instance per transition)
-            _container.Register<GameMenuState, GameMenuState>(ServiceLifetime.Transient);
-            _container.Register<GameEditorState, GameEditorState>(ServiceLifetime.Transient);
-            _container.Register<GamePlayState, GamePlayState>(ServiceLifetime.Transient);
+            _container.Register<GameMenuState>(ServiceLifetime.Transient);
+            _container.Register<GameEditorState>(ServiceLifetime.Transient);
+            _container.Register<GamePlayState>(ServiceLifetime.Transient);
             
             // TODO: Register additional game services here
             // Example:
