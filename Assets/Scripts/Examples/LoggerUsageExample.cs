@@ -22,8 +22,12 @@ namespace UnityIoC.Examples
             // Register logging services
             _container.RegisterLogging();
             
-            // Register typed logger for ExampleService
+            // Option 1: Manually register typed logger for specific service
             _container.RegisterLogger<ExampleService>();
+            
+            // Option 2 (NEW): Auto-register all loggers after registering services
+            // _container.Register<IExampleService, ExampleService>(ServiceLifetime.Singleton);
+            // _container.RegisterAllLoggers(); // Automatically finds and registers all ILogger<T> dependencies
             
             // Register our example service
             _container.Register<IExampleService, ExampleService>(ServiceLifetime.Singleton);
@@ -34,6 +38,9 @@ namespace UnityIoC.Examples
             
             // Example of using ILoggerFactory directly
             DemonstrateLoggerFactory();
+            
+            // Demonstrate auto-registration
+            DemonstrateAutoRegistration();
         }
         
         private void DemonstrateLoggerFactory()
@@ -54,6 +61,27 @@ namespace UnityIoC.Examples
             // Create a logger using generic method
             var genericLogger = loggerFactory.CreateLogger<LoggerUsageExample>();
             genericLogger.Error("Logger created using generic method");
+        }
+        
+        private void DemonstrateAutoRegistration()
+        {
+            Debug.Log("\n=== Auto-Registration Example ===");
+            
+            // Create a new container
+            var autoContainer = new Container();
+            
+            // Register logging
+            autoContainer.RegisterLogging();
+            
+            // Register services WITHOUT manually registering their loggers
+            autoContainer.Register<IAnotherService, AnotherService>(ServiceLifetime.Singleton);
+            
+            // Automatically register all required ILogger<T> dependencies
+            autoContainer.RegisterAllLoggers();
+            
+            // Now resolve the service - the logger is automatically available
+            var anotherService = autoContainer.Resolve<IAnotherService>();
+            anotherService.DoWork();
         }
     }
     
@@ -91,6 +119,29 @@ namespace UnityIoC.Examples
             _logger.Error("An error occurred during work");
             
             _logger.Trace("Work completed");
+        }
+    }
+    
+    /// <summary>
+    /// Another example service to demonstrate auto-registration.
+    /// </summary>
+    public interface IAnotherService
+    {
+        void DoWork();
+    }
+    
+    public class AnotherService : IAnotherService
+    {
+        private readonly ILogger<AnotherService> _logger;
+        
+        public AnotherService(ILogger<AnotherService> logger)
+        {
+            _logger = logger;
+        }
+        
+        public void DoWork()
+        {
+            _logger.Information("AnotherService working with auto-registered logger!");
         }
     }
 }

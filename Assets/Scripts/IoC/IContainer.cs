@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace UnityIoC
 {
@@ -42,5 +43,19 @@ namespace UnityIoC
         /// Checks if a service is registered in the container by type.
         /// </summary>
         bool IsRegistered(Type serviceType);
+        
+        /// <summary>
+        /// Gets all registered service types in the container.
+        /// </summary>
+        /// <returns>An enumerable of all registered service types.</returns>
+        IEnumerable<Type> GetRegisteredTypes();
+        
+        /// <summary>
+        /// Gets the implementation type for a registered service type.
+        /// Returns null if the service is registered with a factory or if not registered.
+        /// </summary>
+        /// <param name="serviceType">The service type to query.</param>
+        /// <returns>The implementation type, or null if not available.</returns>
+        Type GetImplementationType(Type serviceType);
     }
 }

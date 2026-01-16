@@ -107,7 +107,14 @@ The container includes a high-performance logging system designed for dependency
 ```csharp
 // Register logging in your bootstrap
 _container.RegisterLogging();
+
+// Option 1: Manually register each logger
 _container.RegisterLogger<MyService>();
+
+// Option 2 (Recommended): Auto-register all loggers after registering services
+_container.Register<IMyService, MyService>(ServiceLifetime.Singleton);
+_container.Register<IAnotherService, AnotherService>(ServiceLifetime.Singleton);
+_container.RegisterAllLoggers(); // Automatically finds and registers all ILogger<T> dependencies
 
 // Inject logger into your service
 public class MyService
@@ -142,6 +149,7 @@ var typedLogger = factory.CreateLogger<MyClass>();
 
 Benefits:
 - Automatic logger naming based on consuming class
+- **Auto-registration of all required loggers** with `RegisterAllLoggers()`
 - Three log levels: Trace, Information, Error
 - Unity console integration (uses UnityEngine.Debug)
 - File logging for non-Unity environments (with date-based log files)
