@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -7,16 +8,11 @@ namespace UnityIoC.SceneManagement
     /// Manages scene-specific dependencies and objects in Unity projects.
     /// Provides functionality for handling the root Transform for the scene and
     /// for dynamically creating objects in the scene hierarchy.
-    /// Uses a singleton pattern to ensure a single instance per application.
+    /// Designed to be registered as a singleton in the IoC container.
     /// </summary>
-    public class SceneContextManager : MonoBehaviour
+    public class SceneContextManager : ISceneContextManager, IDisposable
     {
         private const string SceneRootName = "SceneRoot";
-        
-        /// <summary>
-        /// Gets the singleton instance of the SceneContextManager.
-        /// </summary>
-        public static SceneContextManager Instance { get; private set; }
 
         /// <summary>
         /// Gets the root transform for the current scene.
@@ -29,31 +25,55 @@ namespace UnityIoC.SceneManagement
         /// </summary>
         private Scene _currentScene;
 
-        private void Awake()
+        /// <summary>
+        /// Tracks whether the SceneContextManager has been initialized.
+        /// </summary>
+        private bool _isInitialized;
+
+        /// <summary>
+        /// Initializes the SceneContextManager.
+        /// Should be called once during application startup.
+        /// </summary>
+        public void Initialize()
         {
-            // Implement singleton pattern
-            if (Instance != null && Instance != this)
+            if (_isInitialized)
             {
-                Destroy(gameObject);
+                Debug.LogWarning("SceneContextManager is already initialized.");
                 return;
             }
 
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-
-        private void OnEnable()
-        {
+            _isInitialized = true;
+            
             // Subscribe to Unity's scene lifecycle events
             SceneManager.sceneLoaded += OnSceneLoaded;
             SceneManager.sceneUnloaded += OnSceneUnloaded;
+            
+            Debug.Log("SceneContextManager initialized.");
         }
 
-        private void OnDisable()
+        /// <summary>
+        /// Disposes the SceneContextManager and unsubscribes from events.
+        /// </summary>
+        public void Dispose()
         {
+            if (!_isInitialized)
+            {
+                return;
+            }
+
             // Unsubscribe from Unity's scene lifecycle events
             SceneManager.sceneLoaded -= OnSceneLoaded;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
+
+            // Clean up the SceneRoot if it exists
+            if (SceneRoot != null)
+            {
+                UnityEngine.Object.Destroy(SceneRoot.gameObject);
+                SceneRoot = null;
+            }
+
+            _isInitialized = false;
+            Debug.Log("SceneContextManager disposed.");
         }
 
         /// <summary>
@@ -93,7 +113,7 @@ namespace UnityIoC.SceneManagement
             // Only destroy the SceneRoot if it belongs to the scene being unloaded
             if (SceneRoot != null && _currentScene.IsValid() && _currentScene == scene)
             {
-                Destroy(SceneRoot.gameObject);
+                UnityEngine.Object.Destroy(SceneRoot.gameObject);
                 SceneRoot = null;
                 _currentScene = default;
                 Debug.Log($"Scene {scene.name} unloaded. SceneRoot destroyed.");
@@ -123,7 +143,7 @@ namespace UnityIoC.SceneManagement
                 return null;
             }
 
-            return Instantiate(prefab, SceneRoot);
+            return UnityEngine.Object.Instantiate(prefab, SceneRoot);
         }
     }
 }
