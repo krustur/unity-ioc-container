@@ -147,6 +147,30 @@ namespace UnityIoC
         }
         
         /// <summary>
+        /// Gets all registered service types in the container.
+        /// </summary>
+        /// <returns>An enumerable of all registered service types.</returns>
+        public IEnumerable<Type> GetRegisteredTypes()
+        {
+            return _services.Keys;
+        }
+        
+        /// <summary>
+        /// Gets the implementation type for a registered service type.
+        /// Returns null if the service is registered with a factory or if not registered.
+        /// </summary>
+        /// <param name="serviceType">The service type to query.</param>
+        /// <returns>The implementation type, or null if not available.</returns>
+        public Type GetImplementationType(Type serviceType)
+        {
+            if (_services.TryGetValue(serviceType, out var descriptor))
+            {
+                return descriptor.ImplementationType;
+            }
+            return null;
+        }
+        
+        /// <summary>
         /// Creates an instance of the specified type with constructor injection.
         /// </summary>
         private object CreateInstance(Type implementationType)
