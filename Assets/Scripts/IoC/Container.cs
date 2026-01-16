@@ -23,6 +23,7 @@ namespace UnityIoC
         /// Registers a service as itself.
         /// </summary>
         public void Register<TService>(ServiceLifetime lifetime = ServiceLifetime.Transient)
+            where TService : class
         {
             Register<TService, TService>(lifetime);
         }
