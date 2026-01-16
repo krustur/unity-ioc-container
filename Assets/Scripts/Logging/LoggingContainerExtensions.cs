@@ -92,11 +92,16 @@ namespace UnityIoC.Logging
                 var loggerImplType = typeof(Logger<>).MakeGenericType(genericArg);
                 
                 // Register using reflection since we can't use generic method directly
+                // Find: void Register<TService, TImplementation>(ServiceLifetime lifetime = ServiceLifetime.Transient)
                 var registerMethod = typeof(IContainer).GetMethods()
-                    .First(m => m.Name == "Register" && 
+                    .FirstOrDefault(m => m.Name == "Register" && 
                            m.IsGenericMethodDefinition && 
                            m.GetGenericArguments().Length == 2 &&
-                           m.GetParameters().Length == 1);
+                           m.GetParameters().Length == 1 &&
+                           m.GetParameters()[0].ParameterType == typeof(ServiceLifetime));
+                
+                if (registerMethod == null)
+                    throw new InvalidOperationException("Unable to find Register<TService, TImplementation>(ServiceLifetime) method on IContainer.");
                 
                 var genericRegisterMethod = registerMethod.MakeGenericMethod(loggerType, loggerImplType);
                 genericRegisterMethod.Invoke(container, new object[] { ServiceLifetime.Singleton });
