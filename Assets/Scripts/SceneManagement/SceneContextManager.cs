@@ -22,6 +22,11 @@ namespace UnityIoC.SceneManagement
         /// </summary>
         public Transform SceneRoot { get; private set; }
 
+        /// <summary>
+        /// Tracks the scene that owns the current SceneRoot.
+        /// </summary>
+        private Scene _currentScene;
+
         private void Awake()
         {
             // Implement singleton pattern
@@ -51,27 +56,50 @@ namespace UnityIoC.SceneManagement
 
         /// <summary>
         /// Called when a scene is loaded. Creates the SceneRoot for the new scene.
+        /// For single scene loads, replaces the existing SceneRoot.
+        /// For additive loads, keeps the existing SceneRoot to avoid orphaning objects.
         /// </summary>
         /// <param name="scene">The loaded scene.</param>
         /// <param name="mode">The scene load mode.</param>
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            SceneRoot = new GameObject("SceneRoot").transform;
-            Debug.Log($"Scene {scene.name} loaded. SceneRoot created.");
+            // For additive loading, keep the existing SceneRoot to avoid orphaning objects
+            if (mode == LoadSceneMode.Additive && SceneRoot != null)
+            {
+                Debug.Log($"Scene {scene.name} loaded additively. Keeping existing SceneRoot.");
+                return;
+            }
+
+            // Create a new SceneRoot GameObject
+            GameObject sceneRootObject = new GameObject("SceneRoot");
+            SceneRoot = sceneRootObject.transform;
+            
+            // Move the SceneRoot to the loaded scene
+            SceneManager.MoveGameObjectToScene(sceneRootObject, scene);
+            _currentScene = scene;
+            
+            Debug.Log($"Scene {scene.name} loaded. SceneRoot created and moved to scene.");
         }
 
         /// <summary>
-        /// Called when a scene is unloaded. Destroys the SceneRoot.
+        /// Called when a scene is unloaded. Destroys the SceneRoot only if it belongs to the unloaded scene.
+        /// This prevents destroying the SceneRoot when other scenes are unloaded in multi-scene setups.
         /// </summary>
         /// <param name="scene">The unloaded scene.</param>
         private void OnSceneUnloaded(Scene scene)
         {
-            if (SceneRoot != null)
+            // Only destroy the SceneRoot if it belongs to the scene being unloaded
+            if (SceneRoot != null && _currentScene.IsValid() && _currentScene == scene)
             {
                 Destroy(SceneRoot.gameObject);
+                SceneRoot = null;
+                _currentScene = default(Scene);
+                Debug.Log($"Scene {scene.name} unloaded. SceneRoot destroyed.");
             }
-            SceneRoot = null;
-            Debug.Log($"Scene {scene.name} unloaded. SceneRoot destroyed.");
+            else
+            {
+                Debug.Log($"Scene {scene.name} unloaded. SceneRoot belongs to a different scene.");
+            }
         }
 
         /// <summary>
