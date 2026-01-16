@@ -11,6 +11,8 @@ namespace UnityIoC.SceneManagement
     /// </summary>
     public class SceneContextManager : MonoBehaviour
     {
+        private const string SceneRootName = "SceneRoot";
+        
         /// <summary>
         /// Gets the singleton instance of the SceneContextManager.
         /// </summary>
@@ -71,7 +73,7 @@ namespace UnityIoC.SceneManagement
             }
 
             // Create a new SceneRoot GameObject
-            GameObject sceneRootObject = new GameObject("SceneRoot");
+            GameObject sceneRootObject = new GameObject(SceneRootName);
             SceneRoot = sceneRootObject.transform;
             
             // Move the SceneRoot to the loaded scene
@@ -93,7 +95,7 @@ namespace UnityIoC.SceneManagement
             {
                 Destroy(SceneRoot.gameObject);
                 SceneRoot = null;
-                _currentScene = default(Scene);
+                _currentScene = default;
                 Debug.Log($"Scene {scene.name} unloaded. SceneRoot destroyed.");
             }
             else
