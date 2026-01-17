@@ -44,8 +44,7 @@ namespace UnityIoC.SceneManagement
 
             _isInitialized = true;
             
-            // Subscribe to Unity's scene lifecycle events
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            // Subscribe to Unity's scene lifecycle events for cleanup only
             SceneManager.sceneUnloaded += OnSceneUnloaded;
             
             Debug.Log("SceneContextManager initialized.");
@@ -62,7 +61,6 @@ namespace UnityIoC.SceneManagement
             }
 
             // Unsubscribe from Unity's scene lifecycle events
-            SceneManager.sceneLoaded -= OnSceneLoaded;
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
             // Clean up the SceneRoot if it exists
@@ -77,30 +75,99 @@ namespace UnityIoC.SceneManagement
         }
 
         /// <summary>
-        /// Called when a scene is loaded. Creates the SceneRoot for the new scene.
-        /// For single scene loads, replaces the existing SceneRoot.
-        /// For additive loads, keeps the existing SceneRoot to avoid orphaning objects.
+        /// Begins a new scene by creating a SceneRoot for it.
+        /// This should be called explicitly when starting a new scene to ensure
+        /// the SceneRoot is ready before any objects are instantiated.
         /// </summary>
-        /// <param name="scene">The loaded scene.</param>
-        /// <param name="mode">The scene load mode.</param>
-        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        public void BeginNewScene()
         {
-            // For additive loading, keep the existing SceneRoot to avoid orphaning objects
-            if (mode == LoadSceneMode.Additive && SceneRoot != null)
+            if (!_isInitialized)
             {
-                Debug.Log($"Scene {scene.name} loaded additively. Keeping existing SceneRoot.");
+                Debug.LogError("SceneContextManager is not initialized. Call Initialize() first.");
                 return;
             }
 
+            // Clean up existing SceneRoot if present
+            if (SceneRoot != null)
+            {
+                UnityEngine.Object.Destroy(SceneRoot.gameObject);
+                SceneRoot = null;
+            }
+
+            // Get the active scene
+            Scene activeScene = SceneManager.GetActiveScene();
+            
             // Create a new SceneRoot GameObject
             GameObject sceneRootObject = new GameObject(SceneRootName);
             SceneRoot = sceneRootObject.transform;
             
-            // Move the SceneRoot to the loaded scene
-            SceneManager.MoveGameObjectToScene(sceneRootObject, scene);
-            _currentScene = scene;
+            // Move the SceneRoot to the active scene
+            SceneManager.MoveGameObjectToScene(sceneRootObject, activeScene);
+            _currentScene = activeScene;
             
-            Debug.Log($"Scene {scene.name} loaded. SceneRoot created and moved to scene.");
+            Debug.Log($"SceneRoot created for scene '{activeScene.name}'.");
+        }
+
+        /// <summary>
+        /// Loads a scene and automatically sets up the SceneRoot for it.
+        /// This is a wrapper around Unity's SceneManager.LoadScene that ensures
+        /// proper scene context initialization.
+        /// </summary>
+        /// <param name="sceneName">The name of the scene to load.</param>
+        /// <param name="mode">The scene load mode (Single or Additive).</param>
+        public void LoadScene(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
+        {
+            if (!_isInitialized)
+            {
+                Debug.LogError("SceneContextManager is not initialized. Call Initialize() first.");
+                return;
+            }
+
+            // For additive loading, keep the existing SceneRoot
+            if (mode == LoadSceneMode.Additive && SceneRoot != null)
+            {
+                Debug.Log($"Loading scene '{sceneName}' additively. Keeping existing SceneRoot.");
+                SceneManager.LoadScene(sceneName, mode);
+                return;
+            }
+
+            // Load the scene
+            SceneManager.LoadScene(sceneName, mode);
+            
+            // Create SceneRoot for the newly loaded scene
+            BeginNewScene();
+        }
+
+        /// <summary>
+        /// Loads a scene asynchronously and automatically sets up the SceneRoot for it.
+        /// This is a wrapper around Unity's SceneManager.LoadSceneAsync that ensures
+        /// proper scene context initialization.
+        /// </summary>
+        /// <param name="sceneName">The name of the scene to load.</param>
+        /// <param name="mode">The scene load mode (Single or Additive).</param>
+        /// <returns>An AsyncOperation that can be used to track the loading progress.</returns>
+        public AsyncOperation LoadSceneAsync(string sceneName, LoadSceneMode mode = LoadSceneMode.Single)
+        {
+            if (!_isInitialized)
+            {
+                Debug.LogError("SceneContextManager is not initialized. Call Initialize() first.");
+                return null;
+            }
+
+            // For additive loading, keep the existing SceneRoot
+            if (mode == LoadSceneMode.Additive && SceneRoot != null)
+            {
+                Debug.Log($"Loading scene '{sceneName}' additively. Keeping existing SceneRoot.");
+                return SceneManager.LoadSceneAsync(sceneName, mode);
+            }
+
+            // Start loading the scene asynchronously
+            AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneName, mode);
+            
+            // Subscribe to completion to create SceneRoot
+            asyncOperation.completed += (op) => BeginNewScene();
+            
+            return asyncOperation;
         }
 
         /// <summary>

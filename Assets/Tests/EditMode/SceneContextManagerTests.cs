@@ -55,10 +55,31 @@ namespace UnityIoC.Tests
         }
 
         [Test]
+        public void BeginNewScene_WithoutInitialize_ShouldLogError()
+        {
+            // Act & Assert - Should not throw, but will log error
+            Assert.DoesNotThrow(() => _sceneContextManager.BeginNewScene());
+        }
+
+        [Test]
+        public void BeginNewScene_AfterInitialize_ShouldCreateSceneRoot()
+        {
+            // Arrange
+            _sceneContextManager.Initialize();
+
+            // Act
+            _sceneContextManager.BeginNewScene();
+
+            // Assert
+            Assert.IsNotNull(_sceneContextManager.SceneRoot);
+        }
+
+        [Test]
         public void CreateObjectInScene_WithNullPrefab_ReturnsNull()
         {
             // Arrange
             _sceneContextManager.Initialize();
+            _sceneContextManager.BeginNewScene();
 
             // Act
             var result = _sceneContextManager.CreateObjectInScene(null);
@@ -68,8 +89,11 @@ namespace UnityIoC.Tests
         }
 
         [Test]
-        public void SceneRoot_BeforeInitialize_IsNull()
+        public void SceneRoot_BeforeBeginNewScene_IsNull()
         {
+            // Arrange
+            _sceneContextManager.Initialize();
+
             // Assert
             Assert.IsNull(_sceneContextManager.SceneRoot);
         }
@@ -86,6 +110,23 @@ namespace UnityIoC.Tests
         {
             // Assert
             Assert.IsNotNull(_sceneContextManager as IDisposable);
+        }
+
+        [Test]
+        public void LoadScene_WithoutInitialize_ShouldLogError()
+        {
+            // Act & Assert - Should not throw, but will log error
+            Assert.DoesNotThrow(() => _sceneContextManager.LoadScene("TestScene"));
+        }
+
+        [Test]
+        public void LoadSceneAsync_WithoutInitialize_ReturnsNull()
+        {
+            // Act
+            var result = _sceneContextManager.LoadSceneAsync("TestScene");
+
+            // Assert
+            Assert.IsNull(result);
         }
     }
 }

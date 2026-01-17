@@ -72,6 +72,9 @@ namespace UnityIoC.Bootstrap
             _sceneContextManager = _container.Resolve<ISceneContextManager>();
             _sceneContextManager.Initialize();
             
+            // Set up the SceneRoot for the initial scene
+            _sceneContextManager.BeginNewScene();
+            
             // TODO: Register additional game services here
             // Example:
             // _container.Register<IAudioService, AudioService>(ServiceLifetime.Singleton);
