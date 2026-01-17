@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityIoC.GameStates;
+using UnityIoC.SceneManagement;
 
 namespace UnityIoC.Bootstrap
 {
@@ -21,6 +23,7 @@ namespace UnityIoC.Bootstrap
         
         private IContainer _container;
         private IGameStateManager _stateManager;
+        private ISceneContextManager _sceneContextManager;
         
         private void Awake()
         {
@@ -58,11 +61,19 @@ namespace UnityIoC.Bootstrap
             
             // Register core services as singletons
             _container.Register<IGameStateManager, GameStateManager>(ServiceLifetime.Singleton);
+            _container.Register<ISceneContextManager, SceneContextManager>(ServiceLifetime.Singleton);
             
             // Register game states as transient (new instance per transition)
             _container.Register<GameMenuState>(ServiceLifetime.Transient);
             _container.Register<GameEditorState>(ServiceLifetime.Transient);
             _container.Register<GamePlayState>(ServiceLifetime.Transient);
+            
+            // Initialize SceneContextManager
+            _sceneContextManager = _container.Resolve<ISceneContextManager>();
+            _sceneContextManager.Initialize();
+            
+            // Set up the SceneRoot for the initial scene
+            _sceneContextManager.BeginNewScene();
             
             // TODO: Register additional game services here
             // Example:
@@ -104,6 +115,12 @@ namespace UnityIoC.Bootstrap
         
         private void OnDestroy()
         {
+            // Dispose of SceneContextManager
+            if (_sceneContextManager is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+            
             Debug.Log("GameBootstrap destroyed.");
         }
         
