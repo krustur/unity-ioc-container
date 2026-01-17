@@ -112,6 +112,7 @@ namespace UnityIoC.SceneManagement
         /// Loads a scene and automatically sets up the SceneRoot for it.
         /// This is a wrapper around Unity's SceneManager.LoadScene that ensures
         /// proper scene context initialization.
+        /// Note: For better control, consider using LoadSceneAsync instead.
         /// </summary>
         /// <param name="sceneName">The name of the scene to load.</param>
         /// <param name="mode">The scene load mode (Single or Additive).</param>
@@ -131,11 +132,20 @@ namespace UnityIoC.SceneManagement
                 return;
             }
 
+            // Subscribe to sceneLoaded event temporarily for this load operation
+            void OnSceneLoadedHandler(Scene scene, LoadSceneMode loadMode)
+            {
+                // Unsubscribe immediately to prevent multiple calls
+                SceneManager.sceneLoaded -= OnSceneLoadedHandler;
+                
+                // Create SceneRoot for the newly loaded scene
+                BeginNewScene();
+            }
+            
+            SceneManager.sceneLoaded += OnSceneLoadedHandler;
+            
             // Load the scene
             SceneManager.LoadScene(sceneName, mode);
-            
-            // Create SceneRoot for the newly loaded scene
-            BeginNewScene();
         }
 
         /// <summary>
@@ -165,7 +175,14 @@ namespace UnityIoC.SceneManagement
             AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneName, mode);
             
             // Subscribe to completion to create SceneRoot
-            asyncOperation.completed += (op) => BeginNewScene();
+            // Use a local callback that unsubscribes itself to prevent memory leaks
+            void OnCompleted(AsyncOperation op)
+            {
+                op.completed -= OnCompleted;
+                BeginNewScene();
+            }
+            
+            asyncOperation.completed += OnCompleted;
             
             return asyncOperation;
         }
